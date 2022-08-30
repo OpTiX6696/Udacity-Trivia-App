@@ -1,3 +1,4 @@
+from crypt import methods
 import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -15,31 +16,101 @@ def create_app(test_config=None):
 
     """
     @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
-    """
+    """        
+    CORS(app)
 
     """
     @TODO: Use the after_request decorator to set Access-Control-Allow
     """
+    
+    @app.after_request
+    def after_request(response):
+        response.headers.add(
+            "Access-Control-Allow-Headers", "Content-Type, Authorization, true"
+        )
+        response.headers.add(
+            "Access-Control-Allow-Methods", "GET,PUT,POST,PATCH,DELETE,OPTIONS"
+        )
+        
+        return response
+    
+    number_of_resources_per_page = 10
 
-    """
-    @TODO:
-    Create an endpoint to handle GET requests
-    for all available categories.
-    """
+    def paginator(request, resources):
+        page = request.args.get('page', 1, type=int)
+        
+        start = (page - 1) * number_of_resources_per_page
+        end = start + number_of_resources_per_page
+        
+        f_resources = [res.format() for res in resources]
+        paginated_resources = f_resources[start:end]
+        
+        return paginated_resources
 
 
-    """
-    @TODO:
-    Create an endpoint to handle GET requests for questions,
-    including pagination (every 10 questions).
-    This endpoint should return a list of questions,
-    number of total questions, current category, categories.
 
-    TEST: At this point, when you start the application
-    you should see questions and categories generated,
-    ten questions per page and pagination at the bottom of the screen for three pages.
-    Clicking on the page numbers should update the questions.
-    """
+    @app.route('/categories')
+    def get_categories():
+        """
+        @TODO:
+        Create an endpoint to handle GET requests
+        for all available categories.
+        """
+        try:
+            categories = Category.query.all()       
+            f_categories = [category.format() for category in categories]
+            dict_categories = { cat['id']: cat['type'] for cat in f_categories }
+
+            return jsonify(
+                {
+                    'success': True,
+                    'categories': dict_categories
+                }
+            )
+        except:
+            abort(404)
+    
+
+    @app.route('/questions')
+    def get_questions():
+        """
+        @TODO:
+        Create an endpoint to handle GET requests for questions,
+        including pagination (every 10 questions).
+        This endpoint should return a list of questions,
+        number of total questions, current category, categories.
+
+        TEST: At this point, when you start the application
+        you should see questions and categories generated,
+        ten questions per page and pagination at the bottom of the screen for three pages.
+        Clicking on the page numbers should update the questions.
+        """
+        
+        try:
+        
+            questions = Question.query.order_by(Question.id).all()
+            categories = Category.query.all()
+            f_categories = [category.format() for category in categories]
+            dict_categories = { cat['id']: cat['type'] for cat in f_categories }
+            paginated_questions = paginator(request, questions)
+            
+            if not paginated_questions:
+                abort(404)
+        
+        # print(dict_categories)
+        # Category.query.get(questions['category'])['type']
+        
+        
+            return jsonify({
+                'success': True,
+                'questions': paginated_questions,
+                'totalQuestions': len(questions),
+                'categories': dict_categories,
+                # 'currentCategory': 'History'
+                
+            })
+        except:
+            abort(404)
 
     """
     @TODO:
@@ -48,6 +119,23 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     """
+    
+    @app.route('/questions/<int:question_id>', methods=['DELETE'])
+    def delete_question(question_id):
+        try:
+            question = Question.query.get(question_id)
+            
+            if not question:
+                abort(404)
+                
+            question.delete()
+            
+            return jsonify({
+                'success': True,
+                'deleted': question_id
+            })
+        except:
+            abort(404)
 
     """
     @TODO:
@@ -97,6 +185,59 @@ def create_app(test_config=None):
     Create error handlers for all expected errors
     including 404 and 422.
     """
+    
+    @app.errorhandler(404)
+    def not_found(err):
+        return (
+            jsonify(
+                {
+                    'error': 404,
+                    'success': False,
+                    'message': 'Resource Not Found'
+                }
+            ), 404
+        )
+        
+    @app.errorhandler(405)
+    def invalid_method(err):
+        return (
+            jsonify(
+                {
+                    'error': 405,
+                    'success': False,
+                    'message': 'Method Not Allowed'
+                }
+            ), 405
+        )
+    
+    @app.errorhandler(422)
+    def unprocessable(err):
+        return (
+            jsonify(
+                {
+                    'error': 422,
+                    'success': False,
+                    'message': 'Unprocessable Request'
+                }
+            ), 422
+        )
+        
+    @app.errorhandler(400)
+    def bad_request(err):
+        return (
+            jsonify(
+                {
+                    'error': 400,
+                    'success': False,
+                    'message': 'Bad Request'
+                }
+            ), 400
+        )
+
+
+
+
+
 
     return app
 
