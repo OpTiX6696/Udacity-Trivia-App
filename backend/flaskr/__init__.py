@@ -147,7 +147,7 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     """
-
+    
     """
     @TODO:
     Create a POST endpoint to get questions based on a search term.
@@ -158,6 +158,58 @@ def create_app(test_config=None):
     only question that include that string within their question.
     Try using the word "title" to start.
     """
+    
+    @app.route('/questions', methods=['POST'])
+    def add_question():
+        """Method to add question or search questions"""
+        data = request.get_json()
+        question = data.get('question')
+        answer = data.get('answer')
+        difficulty = data.get('difficulty')
+        category = data.get('category')
+        search_term = data.get('searchTerm')
+
+        if search_term:
+            try:
+                if not search_term:
+                    abort(400)
+                
+                search_results = Question.query.order_by(Question.id).filter(Question.question.ilike("%{}%".format(search_term))).all()
+                f_results = [res.format() for res in search_results]
+                
+                categories = Category.query.all()
+                f_categories = [category.format() for category in categories]
+                dict_categories = { cat['id']: cat['type'] for cat in f_categories }
+                
+                return jsonify({
+                    'success': True,
+                    'questions': f_results,
+                    'totalQuestions': len(search_results),
+                    'categories': dict_categories,
+                    # 'currentCategory': 'History'
+                    
+                })
+            except:
+                abort(422)
+        else:       
+        
+            if (not question) or (not answer):
+                abort(400)
+            
+            try:
+                new_question = Question(question=question, answer=answer, category=category, difficulty=difficulty)
+                
+                new_question.insert()
+                
+                # print (new_question.format())
+                
+                return jsonify({
+                    'success': True,
+                    'created': new_question.id
+                })
+            except:
+                abort(422)
+        
 
     """
     @TODO:
@@ -167,6 +219,38 @@ def create_app(test_config=None):
     categories in the left column will cause only questions of that
     category to be shown.
     """
+    
+    @app.route('/categories/<int:category_id>/questions')
+    def get_questions_by_category(category_id):
+        """Successfully Get Questions By Category"""
+        try:
+            questions_by_category = Question.query.filter(Question.category == category_id).all()
+            
+            f_questions_by_category = [question.format() for question in questions_by_category]
+            
+            current_category = Category.query.get(category_id)
+            
+            return jsonify({
+                'success': True,
+                'questions': f_questions_by_category,
+                'totalQuestions': len(questions_by_category),
+                'currentCategory': current_category.type
+            })
+        except:
+            abort(422)
+    #         {
+    #   "questions": [
+    #     {
+    #       "id": 1,
+    #       "question": "This is a question",
+    #       "answer": "This is an answer",
+    #       "difficulty": 5,
+    #       "category": 4
+    #     }
+    #   ],
+    #   "totalQuestions": 100,
+    #   "currentCategory": "History"
+    # }
 
     """
     @TODO:
@@ -178,6 +262,8 @@ def create_app(test_config=None):
     TEST: In the "Play" tab, after a user selects "All" or a category,
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
+    
+    
     """
 
     """
