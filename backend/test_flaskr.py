@@ -35,7 +35,7 @@ class TriviaTestCase(unittest.TestCase):
         }
         
         self.search_term = {
-            'searchTerm': 'title'
+            'searchTerm': 'the'
         }
 
         # binds the app to the current context
@@ -105,18 +105,18 @@ class TriviaTestCase(unittest.TestCase):
     def test_delete_question(self):
         """Successfully delete a question"""
         
-        res = self.client().delete('/questions/6')
+        res = self.client().delete('/questions/5')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertEqual(data['deleted'], 6)
+        self.assertEqual(data['deleted'], 5)
         
         
     def test_404_delete_non_extant_question(self):
         """Delete A Non Extant Question"""
         
-        res = self.client().delete('/questions/100000')
+        res = self.client().delete('/questions/1000')
         data = json.loads(res.data)
         
         self.assertEqual(res.status_code, 404)

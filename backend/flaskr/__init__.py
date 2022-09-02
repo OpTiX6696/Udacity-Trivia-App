@@ -124,11 +124,11 @@ def create_app(test_config=None):
     @app.route("/questions/<int:question_id>", methods=["DELETE"])
     def delete_question(question_id):
         try:
-            question = Question.query.get(question_id)
+            question = Question.query.filter(Question.id == question_id).one_or_none()
             
-            if not question:
+            if question is None:
                 abort(404)
-
+            
             question.delete()
             
             return jsonify({
@@ -136,7 +136,7 @@ def create_app(test_config=None):
                 'deleted': question_id
             })
         except:
-            abort(422)
+            abort(404)
 
     """
     @TODO:
@@ -239,20 +239,7 @@ def create_app(test_config=None):
             })
         except:
             abort(422)
-    #         {
-    #   "questions": [
-    #     {
-    #       "id": 1,
-    #       "question": "This is a question",
-    #       "answer": "This is an answer",
-    #       "difficulty": 5,
-    #       "category": 4
-    #     }
-    #   ],
-    #   "totalQuestions": 100,
-    #   "currentCategory": "History"
-    # }
-
+    
     """
     @TODO:
     Create a POST endpoint to get questions to play the quiz.
