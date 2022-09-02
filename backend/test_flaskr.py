@@ -23,7 +23,7 @@ class TriviaTestCase(unittest.TestCase):
             'question': 'Who do  you think Ismail\'s best artiste is?',
             'answer': 'Brymo',
             'difficulty': 3,
-            'category': '4'
+            'category': 4
         }
         
         self.get_next_quiz_question = {

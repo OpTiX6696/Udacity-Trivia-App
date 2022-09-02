@@ -126,8 +126,8 @@ def create_app(test_config=None):
         try:
             question = Question.query.filter(Question.id == question_id).one_or_none()
             
-            if question is None:
-                abort(404)
+            # if question is None:
+            #     abort(404)
             
             question.delete()
             
@@ -201,9 +201,7 @@ def create_app(test_config=None):
                 new_question = Question(question=question, answer=answer, category=category, difficulty=difficulty)
                 
                 new_question.insert()
-                
-                # print (new_question.format())
-                
+                                
                 return jsonify({
                     'success': True,
                     'created': new_question.id
