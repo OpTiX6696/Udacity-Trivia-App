@@ -119,10 +119,10 @@ class TriviaTestCase(unittest.TestCase):
         res = self.client().delete('/questions/1000')
         data = json.loads(res.data)
         
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(data['message'], 'Resource Not Found')
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['message'], 'Unprocessable Request')
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['error'], 404)
+        self.assertEqual(data['error'], 422)
         
 # ///////////////////////////////////////////
 

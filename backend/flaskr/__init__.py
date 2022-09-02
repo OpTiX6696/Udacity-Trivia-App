@@ -136,7 +136,7 @@ def create_app(test_config=None):
                 'deleted': question_id
             })
         except:
-            abort(404)
+            abort(422)
 
     """
     @TODO:
