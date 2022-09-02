@@ -116,7 +116,7 @@ class TriviaTestCase(unittest.TestCase):
     def test_404_delete_non_extant_question(self):
         """Delete A Non Extant Question"""
         
-        res = self.client().delete('/questions/1000000000000000')
+        res = self.client().delete('/questions/100000')
         data = json.loads(res.data)
         
         self.assertEqual(res.status_code, 404)
