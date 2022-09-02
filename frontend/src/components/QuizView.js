@@ -72,7 +72,23 @@ class QuizView extends Component {
         return;
       },
       error: (error) => {
-        alert('Unable to load question. Please try your request again');
+
+// I did some editing here to suit myself :)
+
+        if (previousQuestions.length > 0) {
+          alert("There are no more questions for this category. So, it ends here :). You can add some more questions in the Add tab")
+          this.setState({
+            forceEnd : true
+          })
+        } else {
+          if (error.statusText === 'NOT FOUND') {
+            alert("No Question for this section. Please, try a different section")
+            window.location.reload(true)
+          } else {
+            alert('Unable to load question. Please try your request again');
+          }
+        }        
+        
         return;
       },
     });
@@ -162,7 +178,7 @@ class QuizView extends Component {
         </div>
         <div className='quiz-answer'>{this.state.currentQuestion.answer}</div>
         <div className='next-question button' onClick={this.getNextQuestion}>
-          {' '}
+          {''}
           Next Question{' '}
         </div>
       </div>

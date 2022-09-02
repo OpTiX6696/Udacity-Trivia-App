@@ -1,5 +1,6 @@
 from crypt import methods
 import os
+# from ssl import AlertDescription
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -125,9 +126,9 @@ def create_app(test_config=None):
         try:
             question = Question.query.get(question_id)
             
-            if not question:
-                abort(404)
-                
+            # if not question:
+            #     abort(404)
+            # Question.delete(question)
             question.delete()
             
             return jsonify({
@@ -262,9 +263,42 @@ def create_app(test_config=None):
     TEST: In the "Play" tab, after a user selects "All" or a category,
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
-    
-    
     """
+    
+    @app.route('/quizzes', methods=['POST'])
+    def get_quiz_question():
+        data = request.get_json()
+        prev_questions = data.get('previous_questions')
+        quiz_category = data.get('quiz_category')
+        try:
+            if quiz_category['id'] == 0:
+                questions = Question.query.all()
+            else:
+                questions = Question.query.filter(Question.category == quiz_category['id']).all()
+        except:
+            abort(422)
+            
+        eligible_next_questions = []
+        
+        for each in questions:
+            if each.id not in prev_questions:
+                eligible_next_questions.append(each)
+            else:
+                pass
+        
+        if not eligible_next_questions:
+            abort(404)
+            
+        f_eligible_next_questions = [question.format() for question in eligible_next_questions]   
+        
+        next_question = random.choice(f_eligible_next_questions)
+        
+        prev_questions.append(next_question['id'])
+        
+        return jsonify({
+            'success': True,
+            'question': next_question
+        })
 
     """
     @TODO:

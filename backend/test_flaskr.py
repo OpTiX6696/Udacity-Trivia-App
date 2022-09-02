@@ -26,6 +26,14 @@ class TriviaTestCase(unittest.TestCase):
             'category': '4'
         }
         
+        self.get_next_quiz_question = {
+            'previous_questions': [],
+            'quiz_category': {
+                'id': 0,
+                'type': 'click'
+            }
+        }
+        
         self.search_term = {
             'searchTerm': 'title'
         }
@@ -185,6 +193,35 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Unprocessable Request')
         self.assertEqual(data['error'], 422)
+        
+# ///////////////////////////////////////////
+
+
+    def test_get_next_question(self):
+        """Successfully Get Next Question In Quiz"""
+        
+        res = self.client().post('/quizzes', json=self.get_next_quiz_question)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['question'])
+    
+    
+    def test_405_get_next_question_with_wrong_method(self):
+        """Get Next Question In Quiz With A Wrong Method"""
+        
+        res = self.client().get('/quizzes', json=self.get_next_quiz_question)
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Method Not Allowed')
+        self.assertEqual(data['error'], 405)
+    
+        
+        
+        
 # success': True,
 #             'questions': paginated_questions,
 #             'totalQuestions': len(questions),
